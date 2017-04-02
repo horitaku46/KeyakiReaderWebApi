@@ -1,9 +1,13 @@
-package main
+package server
 
 import(
+	"github.com/HoritakuDev/KeyakiReaderWebApi/models"
+	"github.com/HoritakuDev/KeyakiReaderWebApi/common"
 	"net/http"
 	"encoding/json"
 	"regexp"
+	"strconv"
+	"log"
 )
 
 const(
@@ -20,18 +24,55 @@ var(
 
 func setCommonHeader(w *http.ResponseWriter)  {
 	(*w).Header().Set("Content-Type", "application/json")
+	(*w).WriteHeader(http.StatusOK)
 }
 
-func getAllBlogs(w http.ResponseWriter, req *http.Request) {
-	var blogs []Blog
-	var condition string
-	setCommonHeader(&w)
-	if newest := req.FormValue("top_id"); ID_PATTERN.MatchString(newest) {
-		condition = "id > " + newest
-	} else if oldest := req.FormValue("bottom_id"); ID_PATTERN.MatchString(oldest) {
-		condition = "id < " + oldest + " LIMIT " + LIMIT_BLOG_ARTICLE
+func parseParameters(req *http.Request) (params map[string]interface{}) {
+	p_str := req.FormValue("params")
+	log.Println(p_str)
+	json.Unmarshal([]byte(p_str), &params)
+	return
+}
+
+func validateIntParam(params map[string]interface{}, key string) (int, bool) {
+	if tmp, ok := params[key]; ok {
+		log.Println("interface{} : " + key)
+		if tmp_int, ok := tmp.(float64); ok {
+			log.Println("float64 : " + key)
+			return int(tmp_int), true
+		}
 	}
-	if _, err := dbmap.Select( &blogs, "SELECT * FROM blogs WHERE " + condition ); err != nil {
+	return 0, false
+}
+
+
+func getAllBlogs(w http.ResponseWriter, req *http.Request) {
+	setCommonHeader(&w)
+
+	// --- "scope" is ID-range of records which will be gathered --- //
+	scope := make(map[string]int)
+
+	params := parseParameters(req)
+	log.Println(params)
+
+	// The parameters has "bottom_id".
+	if oldest, ok := validateIntParam(params, "bottom_id"); ok {
+		scope["start"] = oldest-21
+		scope["end"] = oldest-1
+	// has "top_id".
+	} else if newest, ok := validateIntParam(params, "top_id"); ok {
+		scope["start"] = newest+1
+		tmp_id, _ := dbmap.SelectInt("SELECT MAX(id) FROM blogs")
+		scope["end"] = int(tmp_id)
+	// doesn't have either items.
+	} else {
+		max_id, _ := dbmap.SelectInt("SELECT MAX(id) FROM blogs")
+		scope["start"] = int(max_id-20)
+		scope["end"] = int(max_id)
+	}
+
+	var blogs models.ApiBlogList
+	if err := blogs.SelectAllBetween(dbmap, scope); err == nil {
 		if response, err := json.Marshal(blogs); err == nil {
 			w.Write( response )
 			return
@@ -42,9 +83,25 @@ func getAllBlogs(w http.ResponseWriter, req *http.Request) {
 
 func getIndividualBlogs(w http.ResponseWriter, req *http.Request) {
 	setCommonHeader(&w)
-	var blogs []Blog
-	if member_id := req.FormValue("member_id"); ID_PATTERN.MatchString(member_id) {
-		if _, err := dbmap.Select( &blogs, "SELECT * FROM blogs WHERE writer_id = " + member_id + " ORDER BY id ASC"); err == nil {
+
+	// --- "scope" is ID-range of records which will be gathered --- //
+	scope := make(map[string]int)
+
+	params := parseParameters(req)
+	log.Println(params)
+
+	if newest, ok := validateIntParam(params, "top_id"); ok {
+		scope["top_id"] = newest
+	} else if oldest, ok := validateIntParam(params, "bottom_id"); ok {
+		scope["bottom_id"] = oldest
+	} else {
+		tmp_int64, _ := dbmap.SelectInt("SELECT MAX(id) FROM blogs")
+		scope["bottom_id"] = int(tmp_int64)
+	}
+
+	if member_id, ok := validateIntParam(params, "member_id"); ok {
+		var blogs models.ApiBlogList
+		if err := blogs.SelectIndiBetween(dbmap, scope, member_id); err == nil {
 			if response, err := json.Marshal(blogs); err == nil {
 				w.Write( response )
 				return
@@ -56,15 +113,20 @@ func getIndividualBlogs(w http.ResponseWriter, req *http.Request) {
 
 func getNews(w http.ResponseWriter, req *http.Request) {
 	setCommonHeader(&w)
-	var news []News
+	params := parseParameters(req)
+	log.Println(params)
+
+	var news []models.News
 	var condition string
-	if newest := req.FormValue("top_id"); ID_PATTERN.MatchString(newest) {
-		condition = " id > " + newest
-	} else if oldest := req.FormValue("bottom_id"); ID_PATTERN.MatchString(oldest) {
-		condition = " id < " + oldest + " LIMIT " + LIMIT_NEWS_ARTICLE
+	if newest, ok := validateIntParam(params, "top_id"); ok {
+		condition = " id > " + strconv.Itoa(newest)
+	} else if oldest, ok := validateIntParam(params, "bottom_id"); ok {
+		condition = " id BETWEEN " + strconv.Itoa(oldest-21) + " AND " + strconv.Itoa(oldest-1)
+	} else {
+		record_num, _ := dbmap.SelectInt("SELECT MAX(id) FROM news")
+		condition = " id BETWEEN " + strconv.Itoa(int(record_num-21)) + " AND " + strconv.Itoa(int(record_num-1))
 	}
-	condition += " ORDER BY id ASC"
-	if _, err := dbmap.Select( &news, "SELECT * FROM news WHERE" + condition + "ORDER BY id ASC"); err == nil {
+	if _, err := dbmap.Select( &news, "SELECT * FROM news WHERE" + condition + " ORDER BY id ASC"); err == nil {
 		response, _ := json.Marshal(news)
 		w.Write(response)
 		return
@@ -74,7 +136,7 @@ func getNews(w http.ResponseWriter, req *http.Request) {
 
 func getMembers(w http.ResponseWriter, req *http.Request) {
 	setCommonHeader(&w)
-	var members []Member
+	var members []models.Member
 	if _, err := dbmap.Select(&members, "SELECT * FROM members ORDER BY id ASC"); err == nil {
 		if response, err := json.Marshal(members); err == nil {
 			w.Write( response )
@@ -86,4 +148,14 @@ func getMembers(w http.ResponseWriter, req *http.Request) {
 
 func getImages(w http.ResponseWriter, req *http.Request) {
 	setCommonHeader(&w)
+}
+
+func getAllConf(w http.ResponseWriter, req *http.Request) {
+	setCommonHeader(&w)
+	conf_map := map[string]string{
+		"blog_upper_url": common.BLOG_UPPDER_URL,
+		"image_upper_url": common.IMAGE_UPPDER_URL,
+	}
+	json_byte, _ := json.Marshal(conf_map)
+	w.Write( json_byte )
 }

@@ -6,7 +6,6 @@ import(
 	"log"
 	"net/http"
 	"io/ioutil"
-	"flag"
 )
 
 const(
@@ -17,12 +16,7 @@ var(
 	dbmap *gorp.DbMap
 )
 
-func StartScraping(arg_dbmap *gorp.DbMap) {
-
-	// --- check arguments (Is it includes "init" option?) --- //
-	var should_scrape_all_blogs bool
-	flag.BoolVar(&should_scrape_all_blogs, "init", false, "Do initial scraping")
-	flag.Parse()
+func StartScraping(arg_dbmap *gorp.DbMap, should_scrape_all_blogs bool) {
 
 	log.Println("scraping cron is activated.")
 	dbmap = arg_dbmap
