@@ -28,7 +28,7 @@ func scrapeAllBlogs() {
 }
 
 func scrapeRecentBlogs() {
-	should_continue := true
+	should_continue := true	// indicates unreached an article which stored database ?
 	for i := 0; should_continue; i++ {
 		should_continue = scrapeBlog(common.BLOG_UPPDER_URL + "?ima=" + strconv.Itoa(i))
 	}
@@ -46,8 +46,12 @@ func scrapeBlog(url string) (should_continue bool) {
 	}
 	articles := make([]BlogImgPair, 0, 20)
 	doc.Find("article").Each(func(index int, article *goquery.Selection) {
-		articles = append(articles[:1], articles[0:]...)
-		articles[0], should_continue = marshalBlog(article)
+		var tmp_art BlogImgPair
+		tmp_art, should_continue = marshalBlog(article)
+		if should_continue {
+			articles = append(articles[:1], articles[0:]...)
+			articles[0] = tmp_art
+		}
 	})
 
 	// --- insert into database --- //
@@ -57,7 +61,6 @@ func scrapeBlog(url string) (should_continue bool) {
 		}
 		dbmap.Insert(&pair.Blog)
 		for _, img := range pair.Images {
-			log.Println(img.Url)
 			img.ArticleId = pair.Blog.Id
 			dbmap.Insert(&img)
 		}
@@ -96,7 +99,9 @@ func marshalBlog(article *goquery.Selection) (datum BlogImgPair, should_continue
 	// --- If this article exists on database, this function doesn't work. --- //
 	var tmp_articles []models.Blog
 	dbmap.Select(&tmp_articles, "SELECT * FROM blogs WHERE link_url = '" + datum.Blog.Link + "'")
+	log.Println(datum.Blog.Link)
 	if(len(tmp_articles) != 0) {
+		log.Println(len(tmp_articles))
 		should_continue = false
 		return
 	}
