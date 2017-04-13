@@ -31,7 +31,7 @@ type ApiBlog struct {
 	Title string		`db:"title, notnull"                json:"blog_title"`
 	Url string	`db:"link_url" json:"blog_url"`
 	Writer string	`db:"writer_name" json:"blog_writer"`
-	Images string	`db:"thumbnail_url" json:"blog_image_url"`
+	Image string	`db:"thumbnail_url" json:"blog_image_url"`
 	Updated time.Time	`db:"updated, notnull"              json:"blog_update_time"`
 }
 
@@ -78,8 +78,8 @@ func (this *ApiBlogList) SelectAllBetween(dbmap *gorp.DbMap, scope map[string]in
 
 type ApiImages struct {
 	Id int32	`db:"id" json:"blog_id"`
-	Title string		`db:"title, notnull"                json:"blog_title"`
+	Title string	`db:"title, notnull"                json:"blog_title"`
 	Url int32	`db:"link_url" json:"blog_url"`
-	Images []string `json:"blog_image_url_array"`
+	Images []string	`json:"blog_image_url_array"`
 	Updated time.Time	`db:"updated, notnull"              json:"blog_update_time"`
 }

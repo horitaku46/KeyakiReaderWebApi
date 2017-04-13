@@ -28,8 +28,7 @@ func scrapeMembers() {
 	// --- read member's information from article --- //
 	scraped_members := make([]models.Member, 0, 50)
 	scrape_member := func(_ int, member_info *goquery.Selection) {
-		scraped_members = append(scraped_members[:1], scraped_members[0:]...)
-		scraped_members[0] = getMemberFromLI(member_info)
+		scraped_members = append( scraped_members, getMemberFromLI(member_info) )
 	}
 	tmp_div := doc.Find("div.sorted.sort-default.current").Find("div.box-member")
 	tmp_div.First().Find("li").Each(scrape_member) // keyaki-zaka64

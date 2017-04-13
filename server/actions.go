@@ -159,3 +159,11 @@ func getAllConf(w http.ResponseWriter, req *http.Request) {
 	json_byte, _ := json.Marshal(conf_map)
 	w.Write( json_byte )
 }
+
+// --- test method --- //
+func echoTest(w http.ResponseWriter, req *http.Request) {
+	setCommonHeader(&w)
+	params := parseParameters(req)
+	buff, _ := json.Marshal(&params)
+	w.Write( buff )
+}

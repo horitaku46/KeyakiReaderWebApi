@@ -11,7 +11,6 @@ import(
 	"strconv"
 )
 const (
-	BLOG_PARAM_ALL = "?ima=000"
 	BLOG_PARAM_SPECIFY_PAGE = "?page="
 	BLOG_SAVING_DIR = "/var/tmp/keyaki/blog.html"
 	BLOG_MAX_PAGE = 420
@@ -29,22 +28,26 @@ func scrapeAllBlogs() {
 }
 
 func scrapeRecentBlogs() {
-	scrapeBlog(common.BLOG_UPPDER_URL + BLOG_PARAM_ALL)
+	should_continue := true
+	for i := 0; should_continue; i++ {
+		should_continue = scrapeBlog(common.BLOG_UPPDER_URL + "?ima=" + strconv.Itoa(i))
+	}
 }
 
-func scrapeBlog(url string) {
+func scrapeBlog(url string) (should_continue bool) {
 	log.Println("start scraping from : " + url)
 	downloadFile(url, BLOG_SAVING_DIR)
 	file_infos, _ := ioutil.ReadFile(BLOG_SAVING_DIR)
 	str_reader := strings.NewReader(string(file_infos))
 	doc, err := goquery.NewDocumentFromReader(str_reader)
+	should_continue = true
 	if err != nil {
 		log.Println(err)
 	}
 	articles := make([]BlogImgPair, 0, 20)
 	doc.Find("article").Each(func(index int, article *goquery.Selection) {
 		articles = append(articles[:1], articles[0:]...)
-		articles[0] = marshalBlog(article)
+		articles[0], should_continue = marshalBlog(article)
 	})
 
 	// --- insert into database --- //
@@ -62,7 +65,7 @@ func scrapeBlog(url string) {
 	return
 }
 
-func marshalBlog(article *goquery.Selection) (datum BlogImgPair) {
+func marshalBlog(article *goquery.Selection) (datum BlogImgPair, should_continue bool) {
 	header := article.Find("div.innerHead")
 	content := article.Find("div.box-article")
 	bottom := article.Find("div.box-bottom")
@@ -71,6 +74,8 @@ func marshalBlog(article *goquery.Selection) (datum BlogImgPair) {
 	title := header.Find("a").Text()
 	writer := strings.TrimSpace(header.Find("p.name").Text())
 	updated_str := strings.TrimSpace(bottom.Find("li").First().Text())
+
+	should_continue = true
 
 	// --- get member's id from database --- //
 	tmp_id, _ := dbmap.SelectInt("SELECT ID FROM members WHERE name = '" + writer + "'", &models.Member{})
@@ -87,10 +92,12 @@ func marshalBlog(article *goquery.Selection) (datum BlogImgPair) {
 		Images: make([]models.Image, 0, 20),
 	}
 	tf.SetTimeInJST(updated_str, &datum.Blog)
+
 	// --- If this article exists on database, this function doesn't work. --- //
 	var tmp_articles []models.Blog
-	dbmap.Select(&tmp_articles, "SELECT * FROM blogs WHERE title = '" + title + "' AND updated = '" + tf.FormatTimeToStr(datum.Blog.Updated) + "'")
+	dbmap.Select(&tmp_articles, "SELECT * FROM blogs WHERE link_url = '" + datum.Blog.Link + "'")
 	if(len(tmp_articles) != 0) {
+		should_continue = false
 		return
 	}
 

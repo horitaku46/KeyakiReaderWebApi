@@ -15,6 +15,7 @@ var (
 		{"/members/get", getMembers},
 		{"/images/get", getImages},
 		{"/conf/get", getAllConf},
+		{"/test/echo", echoTest},
 	}
 )
 
@@ -33,4 +34,3 @@ func ActivateServer(arg_dbmap *gorp.DbMap, port string) {
 	}
 	log.Fatal( http.ListenAndServe(port, nil) )
 }
-
