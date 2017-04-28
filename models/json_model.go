@@ -112,10 +112,17 @@ func SelectMemberImages(dbmap *gorp.DbMap, scope map[string]int, writer_id int) 
 		log.Println(err)
 		return
 	}
-	for _, article := range images {
-		_, err = dbmap.Select( &(article.Images), "SELECT url FROM images WHERE article_id = " + strconv.Itoa(int(article.Id)), nil)
-		log.Println("SELECT url FROM images WHERE article_id = " + strconv.Itoa(int(article.Id)))
-		log.Println(article.Images)
+	for i:= 0; i < len(images); i++ {
+		/*
+		var imgs []Image
+		_, err = dbmap.Select( &(imgs), "SELECT * FROM images WHERE article_id = " + strconv.Itoa(int(article.Id)))
+		for _, img := range imgs {
+			article.Images = append(article.Images, img.Url)
+		}
+		log.Println(imgs)
+		*/
+		_, err = dbmap.Select( &(images[i].Images), "SELECT url FROM images WHERE article_id = " + strconv.Itoa(int(images[i].Id)))
+		log.Println(images[i].Images)
 	}
 	return
 }
