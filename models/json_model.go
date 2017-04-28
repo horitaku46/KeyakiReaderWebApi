@@ -4,8 +4,7 @@ import(
 	"time"
 	"log"
 	"strconv"
-	"github.com/go-gorp/gorp"
-)
+	"github.com/go-gorp/gorp")
 
 const(
 	SQL_SELECT_API_BLOGS = `
@@ -76,10 +75,47 @@ func (this *ApiBlogList) SelectAllBetween(dbmap *gorp.DbMap, scope map[string]in
 	return nil
 }
 
-type ApiImages struct {
+type ApiImage struct {
 	Id int32	`db:"id" json:"blog_id"`
 	Title string	`db:"title, notnull"                json:"blog_title"`
-	Url int32	`db:"link_url" json:"blog_url"`
-	Images []string	`json:"blog_image_url_array"`
+	Url string	`db:"link_url" json:"blog_url"`
+	Images []string	`db:"url" json:"blog_image_url_array"`
 	Updated time.Time	`db:"updated, notnull"              json:"blog_update_time"`
+}
+
+func SelectMemberImages(dbmap *gorp.DbMap, scope map[string]int, writer_id int) (images []ApiImage, err error) {
+
+	sql := `SELECT
+			id,
+			title,
+			link_url,
+			updated
+		FROM blogs
+		WHERE writer_id = 
+	` + strconv.Itoa(writer_id) + " "
+	if _, ok := scope["top_id"]; ok {
+		sql += " AND id > :top_id "
+	} else if _, ok := scope["bottom_id"]; ok {
+		sql = `
+			SELECT * FROM (
+			` + sql + `
+			AND id < :bottom_id
+			ORDER BY id DESC
+			LIMIT 20
+			) AS TMP
+			ORDER BY id ASC
+		`
+	}
+	log.Println(sql)
+	_, err = dbmap.Select(&images, sql, scope)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	for _, article := range images {
+		_, err = dbmap.Select( &(article.Images), "SELECT url FROM images WHERE article_id = " + strconv.Itoa(int(article.Id)), nil)
+		log.Println("SELECT url FROM images WHERE article_id = " + strconv.Itoa(int(article.Id)))
+		log.Println(article.Images)
+	}
+	return
 }

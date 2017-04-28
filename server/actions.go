@@ -27,10 +27,13 @@ func setCommonHeader(w *http.ResponseWriter)  {
 	(*w).WriteHeader(http.StatusOK)
 }
 
+// --- this function accepts parameters which is following under --- //
+// params = "\{\"hogehoge\": \"value\", "\foo"\: 10"\}"
 func parseParameters(req *http.Request) (params map[string]interface{}) {
 	p_str := req.FormValue("params")
 	log.Println(p_str)
 	json.Unmarshal([]byte(p_str), &params)
+	log.Println(params)
 	return
 }
 
@@ -148,6 +151,31 @@ func getMembers(w http.ResponseWriter, req *http.Request) {
 
 func getImages(w http.ResponseWriter, req *http.Request) {
 	setCommonHeader(&w)
+	params := parseParameters(req)
+
+	scope := make(map[string]int, 1)
+	if newest, ok := validateIntParam(params, "top_id"); ok {
+		scope["top_id"] = newest
+	} else if oldest, ok := validateIntParam(params, "bottom_id"); ok {
+		scope["bottom_id"] = oldest
+	} else {
+		tmp_int64, _ := dbmap.SelectInt("SELECT MAX(id) FROM blogs")
+		scope["bottom_id"] = int(tmp_int64)
+	}
+
+	var images []models.ApiImage
+	var err error
+	if member_id, ok := validateIntParam(params, "member_id"); ok {
+		if images, err = models.SelectMemberImages(dbmap, scope, member_id); err != nil {
+			log.Println(err)
+			return
+		}
+		if imaegs_json, err := json.Marshal(images); err == nil {
+			w.Write( imaegs_json )
+			return
+		}
+	}
+	w.Write( []byte("[]") )
 }
 
 func getAllConf(w http.ResponseWriter, req *http.Request) {
