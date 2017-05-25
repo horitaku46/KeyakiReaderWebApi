@@ -51,8 +51,7 @@ func validateIntParam(params map[string]interface{}, key string) (int, bool) {
 
 func getAllBlogs(w http.ResponseWriter, req *http.Request) {
 	setCommonHeader(&w)
-
-	// --- "scope" is ID-range of records which will be gathered --- //
+// --- "scope" is ID-range of records which will be gathered --- //
 	scope := make(map[string]int)
 
 	params := parseParameters(req)

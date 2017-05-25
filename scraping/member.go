@@ -54,8 +54,9 @@ func getMemberFromLI(member_info *goquery.Selection) (member models.Member) {
 func insertUpdateIfNeeded(chk_target models.Member, domain *[]models.Member) {
 	for _, m := range *domain {
 		if chk_target.Name == m.Name && chk_target.Ruby == m.Ruby {
-			if chk_target.Thumbnail != m.Thumbnail {
-				m.Thumbnail = chk_target.Thumbnail
+			if chk_target.Thumbnail != (common.IMAGE_UPPDER_URL + m.Thumbnail) {
+				splited_url := strings.SplitAfterN(chk_target.Thumbnail, "/", 4)
+				m.Thumbnail = splited_url[len(splited_url)-1]
 				dbmap.Update(&m)
 			}
 			return

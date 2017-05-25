@@ -109,8 +109,6 @@ func marshalBlog(article *goquery.Selection) (datum BlogImgPair, should_continue
 	}
 	tf.SetTimeInJST(updated_str, &datum.Blog)
 
-	log.Println(updated_str)
-
 	// --- If this article exists on database, this function doesn't work. --- //
 	var tmp_articles []models.Blog
 	dbmap.Select(&tmp_articles, "SELECT * FROM blogs WHERE link_url = '" + datum.Blog.Link + "'")
