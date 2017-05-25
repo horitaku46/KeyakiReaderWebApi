@@ -27,7 +27,7 @@ func SetTimeInJST(time_str string, model interface{}) {
 	case *models.News:
 		v.Updated, _ = time.ParseInLocation(NEWS_DATETIME_FORMAT, time_str, loc)
 	case *models.Member:
-		v.Updated, _ = time.ParseInLocation(MEMBER_DATETIME_FORMAT, time_str, loc)
+		// v.BirthDay, _ = time.ParseInLocation(MEMBER_DATETIME_FORMAT, time_str, loc)
 	}
 }
 

@@ -5,7 +5,7 @@ import(
 	"github.com/HoritakuDev/KeyakiReaderWebApi/common"
 	"github.com/HoritakuDev/KeyakiReaderWebApi/models"
 	"github.com/PuerkitoBio/goquery"
-	"time"
+	//"time"
 	"strings"
 	"io/ioutil"
 	"log"
@@ -46,7 +46,6 @@ func getMemberFromLI(member_info *goquery.Selection) (member models.Member) {
 	member = models.Member{
 		Name: strings.TrimSpace(member_info.Find("p.name").Text()),
 		Ruby: strings.TrimSpace(member_info.Find("p.furigana").Text()),
-		Updated: time.Now(),
 	}
 	member.Thumbnail, _ = member_info.Find("img").Attr("src")
 	return
