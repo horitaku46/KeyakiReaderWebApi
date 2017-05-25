@@ -23,9 +23,23 @@ type BlogImgPair struct {
 	Images []models.Image
 }
 
+func insertBlogImgPairs(articles []BlogImgPair) {
+	for _, pair := range articles {
+		if len(pair.Images) > 0 {
+			pair.Blog.Thumbnail = pair.Images[0].Url
+		}
+		dbmap.Insert(&pair.Blog)
+		for _, img := range pair.Images {
+			img.ArticleId = pair.Blog.Id
+			dbmap.Insert(&img)
+		}
+	}
+}
+
 func scrapeAllBlogs() {
 	for i := BLOG_MAX_PAGE; i >= 0; i-- {
-		scrapeBlog(common.BLOG_UPPDER_URL + BLOG_PARAM_SPECIFY_PAGE + strconv.Itoa(i))
+		tmp, _ :=scrapeBlog(common.BLOG_UPPDER_URL + BLOG_PARAM_SPECIFY_PAGE + strconv.Itoa(i))
+		insertBlogImgPairs(tmp)
 	}
 }
 
@@ -39,16 +53,7 @@ func scrapeRecentBlogs() {
 	}
 
 	// --- insert into database --- //
-	for _, pair := range articles {
-		if len(pair.Images) > 0 {
-			pair.Blog.Thumbnail = pair.Images[0].Url
-		}
-		dbmap.Insert(&pair.Blog)
-		for _, img := range pair.Images {
-			img.ArticleId = pair.Blog.Id
-			dbmap.Insert(&img)
-		}
-	}
+	insertBlogImgPairs(tmp)
 }
 
 func scrapeBlog(url string) (articles []BlogImgPair, should_continue bool) {
@@ -103,6 +108,8 @@ func marshalBlog(article *goquery.Selection) (datum BlogImgPair, should_continue
 		Images: make([]models.Image, 0, 20),
 	}
 	tf.SetTimeInJST(updated_str, &datum.Blog)
+
+	log.Println(updated_str)
 
 	// --- If this article exists on database, this function doesn't work. --- //
 	var tmp_articles []models.Blog
