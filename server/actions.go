@@ -75,6 +75,10 @@ func getAllBlogs(w http.ResponseWriter, req *http.Request) {
 
 	var blogs models.ApiBlogList
 	if err := blogs.SelectAllBetween(dbmap, scope); err == nil {
+		for i := 0; i < len(blogs); i++ {
+			blogs[i].Url = common.BLOG_UPPDER_URL + blogs[i].Url
+			blogs[i].Image = common.IMAGE_UPPDER_URL + blogs[i].Image
+		}
 		if response, err := json.Marshal(blogs); err == nil {
 			w.Write( response )
 			return
@@ -104,6 +108,10 @@ func getIndividualBlogs(w http.ResponseWriter, req *http.Request) {
 	if member_id, ok := validateIntParam(params, "member_id"); ok {
 		var blogs models.ApiBlogList
 		if err := blogs.SelectIndiBetween(dbmap, scope, member_id); err == nil {
+			for i := 0; i < len(blogs); i++ {
+				blogs[i].Url = common.BLOG_UPPDER_URL + blogs[i].Url
+				blogs[i].Image = common.IMAGE_UPPDER_URL + blogs[i].Image
+			}
 			if response, err := json.Marshal(blogs); err == nil {
 				w.Write( response )
 				return
@@ -129,6 +137,9 @@ func getNews(w http.ResponseWriter, req *http.Request) {
 		condition = " id BETWEEN " + strconv.Itoa(int(record_num-21)) + " AND " + strconv.Itoa(int(record_num-1))
 	}
 	if _, err := dbmap.Select( &news, "SELECT * FROM news WHERE" + condition + " ORDER BY id ASC"); err == nil {
+		for i := 0; i < len(news); i++ {
+			news[i].Link = common.NEWS_LIST_URL + news[i].Link
+		}
 		response, _ := json.Marshal(news)
 		w.Write(response)
 		return
@@ -140,6 +151,9 @@ func getMembers(w http.ResponseWriter, req *http.Request) {
 	setCommonHeader(&w)
 	var members []models.Member
 	if _, err := dbmap.Select(&members, "SELECT * FROM members ORDER BY id ASC"); err == nil {
+		for i := 0; i < len(members); i++ {
+			members[i].Thumbnail = common.MEMBER_UPPDER_URL + members[i].Thumbnail
+		}
 		if response, err := json.Marshal(members); err == nil {
 			w.Write( response )
 			return
@@ -168,6 +182,12 @@ func getImages(w http.ResponseWriter, req *http.Request) {
 		if images, err = models.SelectMemberImages(dbmap, scope, member_id); err != nil {
 			log.Println(err)
 			return
+		}
+		for i:=0; i < len(images); i++ {
+			images[i].Url = common.BLOG_UPPDER_URL + images[i].Url
+			for j:= 0; j < len(images[i].Images); j++ {
+				images[i].Images[j] = common.IMAGE_UPPDER_URL + images[i].Images[j]
+			}
 		}
 		if imaegs_json, err := json.Marshal(images); err == nil {
 			w.Write( imaegs_json )
