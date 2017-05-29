@@ -109,8 +109,12 @@ func getIndividualBlogs(w http.ResponseWriter, req *http.Request) {
 		var blogs models.ApiBlogList
 		if err := blogs.SelectIndiBetween(dbmap, scope, member_id); err == nil {
 			for i := 0; i < len(blogs); i++ {
-				blogs[i].Url = common.BLOG_UPPDER_URL + blogs[i].Url
-				blogs[i].Image = common.IMAGE_UPPDER_URL + blogs[i].Image
+				if blogs[i].Url != "" {
+					blogs[i].Url = common.BLOG_UPPDER_URL + blogs[i].Url
+				}
+				if blogs[i].Image != "" {
+					blogs[i].Image = common.IMAGE_UPPDER_URL + blogs[i].Image
+				}
 			}
 			if response, err := json.Marshal(blogs); err == nil {
 				w.Write( response )
@@ -152,7 +156,9 @@ func getMembers(w http.ResponseWriter, req *http.Request) {
 	var members []models.Member
 	if _, err := dbmap.Select(&members, "SELECT * FROM members ORDER BY id ASC"); err == nil {
 		for i := 0; i < len(members); i++ {
-			members[i].Thumbnail = common.MEMBER_UPPDER_URL + members[i].Thumbnail
+			if members[i].Thumbnail != "" {
+				members[i].Thumbnail = common.MEMBER_UPPDER_URL + members[i].Thumbnail
+			}
 		}
 		if response, err := json.Marshal(members); err == nil {
 			w.Write( response )
@@ -184,9 +190,13 @@ func getImages(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 		for i:=0; i < len(images); i++ {
-			images[i].Url = common.BLOG_UPPDER_URL + images[i].Url
+			if images[i].Url != "" {
+				images[i].Url = common.BLOG_UPPDER_URL + images[i].Url
+			}
 			for j:= 0; j < len(images[i].Images); j++ {
-				images[i].Images[j] = common.IMAGE_UPPDER_URL + images[i].Images[j]
+				if images[i].Images[j] != "" {
+					images[i].Images[j] = common.IMAGE_UPPDER_URL + images[i].Images[j]
+				}
 			}
 		}
 		if imaegs_json, err := json.Marshal(images); err == nil {
