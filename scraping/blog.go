@@ -38,8 +38,8 @@ func insertBlogImgPairs(articles []BlogImgPair) {
 
 func scrapeAllBlogs() {
 	for i := BLOG_MAX_PAGE; i >= 0; i-- {
-		tmp, _ :=scrapeBlog(common.BLOG_UPPDER_URL + BLOG_PARAM_SPECIFY_PAGE + strconv.Itoa(i))
-		insertBlogImgPairs(tmp)
+		articles, _ :=scrapeBlog(common.BLOG_UPPDER_URL + BLOG_PARAM_SPECIFY_PAGE + strconv.Itoa(i))
+		insertBlogImgPairs(articles)
 	}
 }
 
@@ -53,7 +53,7 @@ func scrapeRecentBlogs() {
 	}
 
 	// --- insert into database --- //
-	insertBlogImgPairs(tmp)
+	insertBlogImgPairs(articles)
 }
 
 func scrapeBlog(url string) (articles []BlogImgPair, should_continue bool) {
