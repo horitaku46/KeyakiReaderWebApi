@@ -77,7 +77,9 @@ func getAllBlogs(w http.ResponseWriter, req *http.Request) {
 	if err := blogs.SelectAllBetween(dbmap, scope); err == nil {
 		for i := 0; i < len(blogs); i++ {
 			blogs[i].Url = common.BLOG_UPPDER_URL + blogs[i].Url
-			blogs[i].Image = common.IMAGE_UPPDER_URL + blogs[i].Image
+			if blogs[i].Image != "" {
+				blogs[i].Image = common.IMAGE_UPPDER_URL + blogs[i].Image
+			}
 		}
 		if response, err := json.Marshal(blogs); err == nil {
 			w.Write( response )
@@ -109,7 +111,7 @@ func getIndividualBlogs(w http.ResponseWriter, req *http.Request) {
 		var blogs models.ApiBlogList
 		if err := blogs.SelectIndiBetween(dbmap, scope, member_id); err == nil {
 			for i := 0; i < len(blogs); i++ {
-				if blogs[i].Url != "" {
+				if blogs[i].Url != ""  {
 					blogs[i].Url = common.BLOG_UPPDER_URL + blogs[i].Url
 				}
 				if blogs[i].Image != "" {

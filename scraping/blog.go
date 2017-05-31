@@ -27,6 +27,8 @@ func insertBlogImgPairs(articles []BlogImgPair) {
 	for _, pair := range articles {
 		if len(pair.Images) > 0 {
 			pair.Blog.Thumbnail = pair.Images[0].Url
+		} else {
+			pair.Blog.Thumbnail = ""
 		}
 		dbmap.Insert(&pair.Blog)
 		for _, img := range pair.Images {
