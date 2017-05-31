@@ -17,7 +17,7 @@ const(
 )
 
 func scrapeMembers() {
-	downloadFile(common.MEMBER_UPPDER_URL + MEMBER_ALL_PARAM, MEMBER_SAVING_DIR)
+	downloadFile(common.MEMBER_UPPER_URL + MEMBER_ALL_PARAM, MEMBER_SAVING_DIR)
 	file_infos, _ := ioutil.ReadFile(MEMBER_SAVING_DIR)
 	str_reader := strings.NewReader(string(file_infos))
 	doc, err := goquery.NewDocumentFromReader(str_reader)
@@ -54,7 +54,7 @@ func getMemberFromLI(member_info *goquery.Selection) (member models.Member) {
 func insertUpdateIfNeeded(chk_target models.Member, domain *[]models.Member) {
 	for _, m := range *domain {
 		if chk_target.Name == m.Name && chk_target.Ruby == m.Ruby {
-			if chk_target.Thumbnail != (common.IMAGE_UPPDER_URL + m.Thumbnail) {
+			if chk_target.Thumbnail != (common.IMAGE_UPPER_URL + m.Thumbnail) {
 				splited_url := strings.SplitAfterN(chk_target.Thumbnail, "/", 4)
 				m.Thumbnail = splited_url[len(splited_url)-1]
 				dbmap.Update(&m)

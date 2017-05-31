@@ -14,7 +14,6 @@ var (
 		{"/news/get", getNews},
 		{"/members/get", getMembers},
 		{"/images/get", getImages},
-		{"/conf/get", getAllConf},
 		{"/test/echo", echoTest},
 	}
 )

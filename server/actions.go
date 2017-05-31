@@ -76,9 +76,9 @@ func getAllBlogs(w http.ResponseWriter, req *http.Request) {
 	var blogs models.ApiBlogList
 	if err := blogs.SelectAllBetween(dbmap, scope); err == nil {
 		for i := 0; i < len(blogs); i++ {
-			blogs[i].Url = common.BLOG_UPPDER_URL + blogs[i].Url
+			blogs[i].Url = common.BLOG_UPPER_URL + blogs[i].Url
 			if blogs[i].Image != "" {
-				blogs[i].Image = common.IMAGE_UPPDER_URL + blogs[i].Image
+				blogs[i].Image = common.IMAGE_UPPER_URL + blogs[i].Image
 			}
 		}
 		if response, err := json.Marshal(blogs); err == nil {
@@ -112,10 +112,10 @@ func getIndividualBlogs(w http.ResponseWriter, req *http.Request) {
 		if err := blogs.SelectIndiBetween(dbmap, scope, member_id); err == nil {
 			for i := 0; i < len(blogs); i++ {
 				if blogs[i].Url != ""  {
-					blogs[i].Url = common.BLOG_UPPDER_URL + blogs[i].Url
+					blogs[i].Url = common.BLOG_UPPER_URL + blogs[i].Url
 				}
 				if blogs[i].Image != "" {
-					blogs[i].Image = common.IMAGE_UPPDER_URL + blogs[i].Image
+					blogs[i].Image = common.IMAGE_UPPER_URL + blogs[i].Image
 				}
 			}
 			if response, err := json.Marshal(blogs); err == nil {
@@ -159,7 +159,7 @@ func getMembers(w http.ResponseWriter, req *http.Request) {
 	if _, err := dbmap.Select(&members, "SELECT * FROM members ORDER BY id ASC"); err == nil {
 		for i := 0; i < len(members); i++ {
 			if members[i].Thumbnail != "" {
-				members[i].Thumbnail = common.MEMBER_UPPDER_URL + members[i].Thumbnail
+				members[i].Thumbnail = common.IMAGE_UPPER_URL + members[i].Thumbnail
 			}
 		}
 		if response, err := json.Marshal(members); err == nil {
@@ -193,11 +193,11 @@ func getImages(w http.ResponseWriter, req *http.Request) {
 		}
 		for i:=0; i < len(images); i++ {
 			if images[i].Url != "" {
-				images[i].Url = common.BLOG_UPPDER_URL + images[i].Url
+				images[i].Url = common.BLOG_UPPER_URL + images[i].Url
 			}
 			for j:= 0; j < len(images[i].Images); j++ {
 				if images[i].Images[j] != "" {
-					images[i].Images[j] = common.IMAGE_UPPDER_URL + images[i].Images[j]
+					images[i].Images[j] = common.IMAGE_UPPER_URL + images[i].Images[j]
 				}
 			}
 		}
@@ -207,16 +207,6 @@ func getImages(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 	w.Write( []byte("[]") )
-}
-
-func getAllConf(w http.ResponseWriter, req *http.Request) {
-	setCommonHeader(&w)
-	conf_map := map[string]string{
-		"blog_upper_url": common.BLOG_UPPDER_URL,
-		"image_upper_url": common.IMAGE_UPPDER_URL,
-	}
-	json_byte, _ := json.Marshal(conf_map)
-	w.Write( json_byte )
 }
 
 // --- test method --- //
