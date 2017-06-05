@@ -144,7 +144,7 @@ func getNews(w http.ResponseWriter, req *http.Request) {
 	}
 	if _, err := dbmap.Select( &news, "SELECT * FROM news WHERE" + condition + " ORDER BY id ASC"); err == nil {
 		for i := 0; i < len(news); i++ {
-			news[i].Link = common.NEWS_LIST_URL + news[i].Link
+			news[i].Link = common.NEWS_UPPER_URL + news[i].Link
 		}
 		response, _ := json.Marshal(news)
 		w.Write(response)
