@@ -27,12 +27,12 @@ const(
 )
 
 type ApiBlog struct {
-	Id int32	`db:"id" json:"blog_id"`
-	Title string		`db:"title, notnull"                json:"blog_title"`
-	Url string	`db:"link_url" json:"blog_url"`
-	Writer string	`db:"writer_name" json:"blog_writer"`
-	Image string	`db:"thumbnail_url" json:"blog_image_url"`
-	Updated time.Time	`db:"updated, notnull"              json:"blog_update_time"`
+	Id int32		`db:"id"				json:"blog_id"`
+	Title string		`db:"title, notnull"                	json:"blog_title"`
+	Url string		`db:"link_url"				json:"blog_url"`
+	Writer string		`db:"writer_name" 			json:"blog_writer"`
+	Image string		`db:"thumbnail_url" 			json:"blog_image_url"`
+	Updated time.Time	`db:"updated, notnull"              	json:"blog_update_time"`
 }
 
 type ApiBlogList []ApiBlog
@@ -45,7 +45,7 @@ func (this *ApiBlogList) SelectIndiBetween(dbmap *gorp.DbMap, scope map[string]i
 	} else if _, ok := scope["bottom_id"]; ok {
 		sql = `
 			SELECT * FROM (
-		` + sql + `
+			` + sql + `
 			AND blogs.id < :bottom_id
 			ORDER BY blogs.id DESC
 			LIMIT 20
@@ -114,14 +114,6 @@ func SelectMemberImages(dbmap *gorp.DbMap, scope map[string]int, writer_id int) 
 		return
 	}
 	for i:= 0; i < len(images); i++ {
-		/*
-		var imgs []Image
-		_, err = dbmap.Select( &(imgs), "SELECT * FROM images WHERE article_id = " + strconv.Itoa(int(article.Id)))
-		for _, img := range imgs {
-			article.Images = append(article.Images, img.Url)
-		}
-		log.Println(imgs)
-		*/
 		_, err = dbmap.Select( &(images[i].Images), "SELECT url FROM images WHERE article_id = " + strconv.Itoa(int(images[i].Id)))
 		log.Println(images[i].Images)
 	}

@@ -125,8 +125,7 @@ func marshalBlog(article *goquery.Selection) (datum BlogImgPair, should_continue
 		tmp_url, _ := img_tag.Attr("src")
 		// -- appends tips of url to list  -- //
 		splited_url := strings.SplitAfterN(tmp_url, "/", 4)
-		datum.Images = append(datum.Images[:1], datum.Images[0:]...)
-		datum.Images[0] =  models.Image{Url: splited_url[len(splited_url)-1]}
+		datum.Images = append(datum.Images, models.Image{Url: splited_url[len(splited_url)-1]})
 	})
 	return
 }
