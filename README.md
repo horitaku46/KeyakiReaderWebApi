@@ -9,8 +9,8 @@
 	+ members.go  
 	+ images.go  
 	+ news.go  
-- scraping : It 
-	+ scraper.go  
+- scraping : It scrapes data.
+	+ scraper.go  
 	+ blogs.go  
 	+ members.go  
 	+ news.go  
