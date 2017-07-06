@@ -17,12 +17,12 @@ const (
 	BLOG_MAX_PAGE = 420
 )
 
-// --- structure --- //
 type BlogImgPair struct {
 	Blog models.Blog
 	Images []models.Image
 }
 
+// Insert Articles and its Images.
 func insertBlogImgPairs(articles []BlogImgPair) {
 	for _, pair := range articles {
 		if len(pair.Images) > 0 {
@@ -38,6 +38,7 @@ func insertBlogImgPairs(articles []BlogImgPair) {
 	}
 }
 
+// Scrape all blogs.
 func scrapeAllBlogs() {
 	for i := BLOG_MAX_PAGE; i >= 0; i-- {
 		articles, _ :=scrapeBlog(common.URL_ALL_BLOG_LIST + BLOG_PARAM_SPECIFY_PAGE + strconv.Itoa(i))
@@ -45,6 +46,7 @@ func scrapeAllBlogs() {
 	}
 }
 
+// Scrape blogs which recently added.
 func scrapeRecentBlogs() {
 	should_continue := true	// indicates unreached an article which stored database?
 	var articles []BlogImgPair
@@ -58,12 +60,15 @@ func scrapeRecentBlogs() {
 	insertBlogImgPairs(articles)
 }
 
+// Scrape articles from one HTML file.
 func scrapeBlog(url string) (articles []BlogImgPair, should_continue bool) {
 	log.Println("start scraping from : " + url)
 	downloadFile(url, BLOG_SAVING_DIR)
+	// --- Read articles from one HTML file. --- //
 	file_infos, _ := ioutil.ReadFile(BLOG_SAVING_DIR)
 	str_reader := strings.NewReader(string(file_infos))
 	doc, err := goquery.NewDocumentFromReader(str_reader)
+
 	should_continue = true
 	if err != nil {
 		log.Println(err)
@@ -71,8 +76,9 @@ func scrapeBlog(url string) (articles []BlogImgPair, should_continue bool) {
 	articles = make([]BlogImgPair, 20)
 	doc.Find("article").Each(func(index int, article *goquery.Selection) {
 		var tmp_art BlogImgPair
-		tmp_art, should_continue = marshalBlog(article)
-		if should_continue {
+		tmp_art, should_continue = scrapeArticle(article)
+		// --- Read articles from one HTML file. --- //
+		if should_continue { // should_continue.(Target article is not registerd yet)
 			articles = append(articles[:1], articles[0:]...)
 			articles[0] = tmp_art
 		}
@@ -81,7 +87,8 @@ func scrapeBlog(url string) (articles []BlogImgPair, should_continue bool) {
 	return
 }
 
-func marshalBlog(article *goquery.Selection) (datum BlogImgPair, should_continue bool) {
+// Get BlogImgPair from an article and judge continue scraping.
+func scrapeArticle(article *goquery.Selection) (datum BlogImgPair, should_continue bool) {
 	header := article.Find("div.innerHead")
 	content := article.Find("div.box-article")
 	bottom := article.Find("div.box-bottom")

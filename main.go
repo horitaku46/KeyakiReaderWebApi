@@ -40,7 +40,7 @@ func main() {
 
 func initDb() (dbmap *gorp.DbMap) {
 
-	// --- connect to database --- //
+	// --- connect to database and create mapping entity for database --- //
 	db, err := sql.Open("mysql", DB_USER + ":" + DB_PASSWD + "@tcp(" + DB_HOST + ":" + DB_PORT + ")/" + DB_NAME + "?parseTime=true&loc=Asia%2FTokyo")
 	common.CheckErr(err, "sql.Open() is failed.")
 
@@ -51,6 +51,7 @@ func initDb() (dbmap *gorp.DbMap) {
 	dbmap.AddTableWithName(models.Member{}, "members").SetKeys(true, "Id")
 	dbmap.AddTableWithName(models.News{}, "news").SetKeys(true, "Id")
 	dbmap.AddTableWithName(models.Image{}, "images").SetKeys(true, "Id")
+	dbmap.AddTableWithName(models.Client{}, "clients").SetKeys(true, "Id")
 	err = dbmap.CreateTablesIfNotExists()
 	common.CheckErr(err, "Creating tables is failed.")
 

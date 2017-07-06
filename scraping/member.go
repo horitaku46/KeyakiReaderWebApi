@@ -42,6 +42,7 @@ func scrapeMembers() {
 	}
 }
 
+// Get member's information from list items.
 func getMemberFromLI(member_info *goquery.Selection) (member models.Member) {
 	member = models.Member{
 		Name: strings.TrimSpace(member_info.Find("p.name").Text()),
@@ -51,9 +52,10 @@ func getMemberFromLI(member_info *goquery.Selection) (member models.Member) {
 	return
 }
 
+// Insert data to database if updated.
 func insertUpdateIfNeeded(chk_target models.Member, domain *[]models.Member) {
 	for _, m := range *domain {
-		if chk_target.Name == m.Name && chk_target.Ruby == m.Ruby {
+		if chk_target.Name == m.Name && chk_target.Ruby == m.Ruby {		// checking overlap
 			if chk_target.Thumbnail != (common.IMAGE_UPPER_URL + m.Thumbnail) {
 				splited_url := strings.SplitAfterN(chk_target.Thumbnail, "/", 4)
 				m.Thumbnail = splited_url[len(splited_url)-1]

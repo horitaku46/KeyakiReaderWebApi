@@ -1,3 +1,4 @@
+// model for database and json.
 package models
 
 import (

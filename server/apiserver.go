@@ -7,7 +7,7 @@ import(
 )
 var (
 	dbmap *gorp.DbMap
-
+	// list of list { URL path, method }
 	http_funcs = []ActionPair{
 		{"/blogs/all/get", getAllBlogs},
 		{"/blogs/individual/get", getIndividualBlogs},

@@ -37,6 +37,7 @@ func parseParameters(req *http.Request) (params map[string]interface{}) {
 	return
 }
 
+// Convert params from string to int if you can.
 func validateIntParam(params map[string]interface{}, key string) (int, bool) {
 	if tmp, ok := params[key]; ok {
 		log.Println("interface{} : " + key)
@@ -175,12 +176,13 @@ func getImages(w http.ResponseWriter, req *http.Request) {
 	params := parseParameters(req)
 
 	scope := make(map[string]int, 1)
-	if newest, ok := validateIntParam(params, "top_id"); ok {
+	// Image likes stack data structure. (top = newest, bottom = oldest).
+	if newest, ok := validateIntParam(params, "top_id"); ok {							// if specified property "top_id"
 		scope["top_id"] = newest
-	} else if oldest, ok := validateIntParam(params, "bottom_id"); ok {
+	} else if oldest, ok := validateIntParam(params, "bottom_id"); ok {		// if specified property "bottom_id"
 		scope["bottom_id"] = oldest
 	} else {
-		tmp_int64, _ := dbmap.SelectInt("SELECT MAX(id) FROM blogs")
+		tmp_int64, _ := dbmap.SelectInt("SELECT MAX(id) FROM blogs")				// if specified property "bottom_id"
 		scope["bottom_id"] = int(tmp_int64)
 	}
 
